@@ -387,7 +387,10 @@ define(["lib/jquery", "lib/handlebars", "lib/highlight", "lib/jsonpointer", "lib
         stack.pop();
 
         element.addClass("docson").html(html);
+        attachEvents(element);
+    }
 
+    function attachEvents(element) {
         var resizeHandler = element.get(0).onresize;
         function resized() {
             if(resizeHandler) {
