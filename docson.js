@@ -318,8 +318,11 @@ define(["lib/jquery", "lib/handlebars", "lib/highlight", "lib/jsonpointer", "lib
         });
     };
 
-    docson.doc = function(element, schema, ref) {
+    docson.doc = function(element, schema, ref, baseUrl) {
         var d = $.Deferred();
+        if (baseUrl === undefined) {
+            baseUrl = './';
+        }
         init();
         ready.done(function() {
             if(typeof element == "string") {
@@ -341,6 +344,12 @@ define(["lib/jquery", "lib/handlebars", "lib/highlight", "lib/jsonpointer", "lib
 
                 // Fetch external schema
                 if(this.key === "$ref") {
+                    // turn realtive ref into absolute one
+                    if (false == (/^https?:\/\//).test(item) && item.indexOf('#') > 0) {
+                        item = baseUrl + item;
+                        this.update(item);
+                        console.log('rel to ab', baseUrl, item)
+                    }
                     if((/^https?:\/\//).test(item)) {
                         var segments = item.split("#");
                         var p = $.get(segments[0]).then(function(content) {

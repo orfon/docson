@@ -13,7 +13,7 @@
 </head>
 <body>
 <script charset="utf-8">
-    var tests = [ "invoice$Invoice", "enum", "schema","additionalProperties", "address", "fstab", "basic", "not", "oneOf", "anyOf", "allOf", "example2", "properties", "ref"]
+    var tests = [ "invoice$Invoice", "enum", "schema","additionalProperties", "address", "fstab", "basic", "not", "oneOf", "anyOf", "allOf", "example2", "properties", "ref", "refRelativeRemote"]
     require.config({ baseUrl: ".."});
     require(["docson", "lib/jquery"], function(docson) {
         docson.templateBaseUrl="../templates";
@@ -30,7 +30,7 @@
                         if(!item.schema.description) {
                             item.schema.description = item.description;
                         }
-                        docson.doc(element, item.schema, segments[1]);
+                        docson.doc(element, item.schema, segments[1], document.location.href.replace(/\/[^\/]*\/?$/, '/'));
                     });
                 });
             });

@@ -1,0 +1,10 @@
+[
+    {
+        "description": "relative pointer remote ref",
+        "schema": {
+            "properties": {
+                "bar": {"$ref": "./address.json#/0/schema/definitions/address"}
+            }
+        }
+    }
+]
