@@ -361,104 +361,108 @@ define(["lib/jquery", "lib/handlebars", "lib/highlight", "lib/jsonpointer", "lib
             });
 
             refsPromise.done(function() {
-                stack.push(refs);
-                var target = schema;
-                if(ref) {
-                    ref = ref[0] !== '/' ? '/'+ref : ref;
-                    target = jsonpointer.get(schema, ref);
-                    stack.push( schema );
-                }
-
-                target.root = true;
-                target.__ref = "<root>";
-                var html = boxTemplate(target);
-
-                if(ref) {
-                    stack.pop();
-                }
-                stack.pop();
-
-                element.addClass("docson").html(html);
-
-                var resizeHandler = element.get(0).onresize;
-                function resized() {
-                    if(resizeHandler) {
-                        var box = element.find(".box").first();
-                        element.get(0).onresize(box.outerWidth(), box.outerHeight());
-                    }
-                }
-                element.get(0).resized = resized;
-                resized();
-
-                if(highlight) {
-                    element.find(".json-schema").each(function(k, schemaElement) {
-                        highlight.highlightSchema(schemaElement);
-                    });
-                }
-                element.find(".box-title").each(function() {
-                   var ref = $(this).attr("ref");
-                   if(ref) {
-                       if(window.location.href.indexOf("docson/index.html") > -1) {
-                           $(this).find(".box-name").css("cursor", "pointer").attr("title", "Open in new window")
-                           .hover(
-                               function(){ $(this).addClass('link') },
-                               function(){ $(this).removeClass('link') })
-                           .click(function() {
-                                var url = window.location.href+"$$expand";
-                                if(ref !=="<root>") {
-                                   url = url.replace(/(docson\/index.html#[^\$]*).*/, "$1$"+ref+"$$expand");
-                                }
-                                var w;
-                                function receiveMessage(event) {
-                                   if (event.data.id && event.data.id == "docson" && event.data.action == "ready") {
-                                       w.postMessage({ id: "docson", action: "load", definitions: schema, type: event.data.url.split("$")[1], expand: true}, "*");
-                                   }
-                                }
-                                window.addEventListener("message", receiveMessage, false);
-                                w = window.open(url, "_blank");
-                           });
-                       }
-                   }
-                });
-                element.find(".box").mouseenter(function() {
-                    $(this).children(".source-button").fadeIn(300);
-                    $(this).children(".box-body").children(".expand-button").fadeIn(300);
-                });
-                element.find(".box").mouseleave(function() {
-                    $(this).children(".source-button").fadeOut(300);
-                    $(this).children(".box-body").children(".expand-button").fadeOut(300);
-                });
-                element.find(".signature-type-expandable").click(function() {
-                    var boxId = $(this).attr("boxid");
-                    $(this).toggleClass("signature-type-expanded");
-                    $(this).parent().parent().parent().children(".signature-box-container").
-                        children("[boxid='"+boxId+"']").toggle(resizeHandler ? 0 : 300);
-                    resized();
-                });
-                element.find(".expand-button").click(function() {
-                    if($(this).attr("expanded")) {
-                        $(this).parent().parent().find(".expand-button").html(" + ").attr("title", "Expand all");
-                        $(this).parent().parent().find(".signature-type-expandable").removeClass("signature-type-expanded");
-                        $(this).parent().parent().find(".box-container").hide( resizeHandler ? 0 : 300);
-                        $(this).parent().parent().find(".expand-button").removeAttr("expanded");
-                        resized();
-                    } else {
-                        $(this).parent().parent().find(".expand-button").html(" - ").attr("title", "Collapse all");
-                        $(this).parent().parent().find(".signature-type-expandable").addClass("signature-type-expanded");
-                        $(this).parent().parent().find(".box-container").show(resizeHandler ? 0 : 300);
-                        $(this).parent().parent().find(".expand-button").attr("expanded", true);
-                        resized();
-                    }
-                });
-                element.find(".source-button").click(function() {
-                    $(this).parent().children(".box-body").toggle();
-                    $(this).parent().children(".source").toggle();
-                    resized();
-                });
+                onRefsDone(element, schema, ref, refs);
             });
             d.resolve();
         })
         return d.promise();
+    }
+
+    function onRefsDone(element, schema, ref, refs) {
+        stack.push(refs);
+        var target = schema;
+        if(ref) {
+            ref = ref[0] !== '/' ? '/'+ref : ref;
+            target = jsonpointer.get(schema, ref);
+            stack.push( schema );
+        }
+
+        target.root = true;
+        target.__ref = "<root>";
+        var html = boxTemplate(target);
+
+        if(ref) {
+            stack.pop();
+        }
+        stack.pop();
+
+        element.addClass("docson").html(html);
+
+        var resizeHandler = element.get(0).onresize;
+        function resized() {
+            if(resizeHandler) {
+                var box = element.find(".box").first();
+                element.get(0).onresize(box.outerWidth(), box.outerHeight());
+            }
+        }
+        element.get(0).resized = resized;
+        resized();
+
+        if(highlight) {
+            element.find(".json-schema").each(function(k, schemaElement) {
+                highlight.highlightSchema(schemaElement);
+            });
+        }
+        element.find(".box-title").each(function() {
+           var ref = $(this).attr("ref");
+           if(ref) {
+               if(window.location.href.indexOf("docson/index.html") > -1) {
+                   $(this).find(".box-name").css("cursor", "pointer").attr("title", "Open in new window")
+                   .hover(
+                       function(){ $(this).addClass('link') },
+                       function(){ $(this).removeClass('link') })
+                   .click(function() {
+                        var url = window.location.href+"$$expand";
+                        if(ref !=="<root>") {
+                           url = url.replace(/(docson\/index.html#[^\$]*).*/, "$1$"+ref+"$$expand");
+                        }
+                        var w;
+                        function receiveMessage(event) {
+                           if (event.data.id && event.data.id == "docson" && event.data.action == "ready") {
+                               w.postMessage({ id: "docson", action: "load", definitions: schema, type: event.data.url.split("$")[1], expand: true}, "*");
+                           }
+                        }
+                        window.addEventListener("message", receiveMessage, false);
+                        w = window.open(url, "_blank");
+                   });
+               }
+           }
+        });
+        element.find(".box").mouseenter(function() {
+            $(this).children(".source-button").fadeIn(300);
+            $(this).children(".box-body").children(".expand-button").fadeIn(300);
+        });
+        element.find(".box").mouseleave(function() {
+            $(this).children(".source-button").fadeOut(300);
+            $(this).children(".box-body").children(".expand-button").fadeOut(300);
+        });
+        element.find(".signature-type-expandable").click(function() {
+            var boxId = $(this).attr("boxid");
+            $(this).toggleClass("signature-type-expanded");
+            $(this).parent().parent().parent().children(".signature-box-container").
+                children("[boxid='"+boxId+"']").toggle(resizeHandler ? 0 : 300);
+            resized();
+        });
+        element.find(".expand-button").click(function() {
+            if($(this).attr("expanded")) {
+                $(this).parent().parent().find(".expand-button").html(" + ").attr("title", "Expand all");
+                $(this).parent().parent().find(".signature-type-expandable").removeClass("signature-type-expanded");
+                $(this).parent().parent().find(".box-container").hide( resizeHandler ? 0 : 300);
+                $(this).parent().parent().find(".expand-button").removeAttr("expanded");
+                resized();
+            } else {
+                $(this).parent().parent().find(".expand-button").html(" - ").attr("title", "Collapse all");
+                $(this).parent().parent().find(".signature-type-expandable").addClass("signature-type-expanded");
+                $(this).parent().parent().find(".box-container").show(resizeHandler ? 0 : 300);
+                $(this).parent().parent().find(".expand-button").attr("expanded", true);
+                resized();
+            }
+        });
+        element.find(".source-button").click(function() {
+            $(this).parent().children(".box-body").toggle();
+            $(this).parent().children(".source").toggle();
+            resized();
+        });
     }
 
     return docson;
