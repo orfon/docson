@@ -203,7 +203,12 @@ define(["lib/jquery", "lib/handlebars", "lib/highlight", "lib/jsonpointer", "lib
             var i;
             for(i=stack.length-1; i>=0; i--) {
                 if(stack[i][ref]) {
-                    return stack[i][ref];
+                    if((/^https?:\/\//).test(ref)) {
+                        var segments = ref.split("#");
+                        return jsonpointer.get(stack[i][ref], segments[1]);
+                    } else {
+                        return stack[i][ref];
+                    }
                 }
             }
         }
